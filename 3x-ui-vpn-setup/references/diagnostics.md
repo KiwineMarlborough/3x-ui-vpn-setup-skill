@@ -1,5 +1,15 @@
 # Diagnostics Cheat Sheet
 
+## Automated verify
+
+```bash
+export CDN_DOMAIN=cdn.vpn.example.com
+export SUB_PATH=/xK9mP2qR/
+export JSON_PATH=/j4nR8wLz3k/
+export SUB_ID=<full-uuid>
+sudo bash scripts/verify-server.sh
+```
+
 ## Service status
 
 ```bash

@@ -5,6 +5,7 @@
 *_rsa
 .env
 .env.*
+!.env.example
 secrets/
 keys/
 

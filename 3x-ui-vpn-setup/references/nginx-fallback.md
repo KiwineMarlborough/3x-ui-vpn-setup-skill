@@ -20,6 +20,18 @@ Port 443 serves a **legitimate-looking website** (fake CDN landing), not obvious
 2. UFW: allow 80, 443, 10443/tcp.
 3. Sync LE cert: when `cdn01` cert renews, copy or symlink to nginx ssl dir.
 
+## Static page
+
+Copy generic landing from skill repo:
+
+```bash
+sudo mkdir -p /var/www/cdn-fallback
+sudo cp assets/cdn-fallback/index.html /var/www/cdn-fallback/
+# Customize title/branding in index.html before deploy
+```
+
+Skill path: `3x-ui-vpn-setup/assets/cdn-fallback/index.html`
+
 ## Minimal nginx vhost sketch
 
 ```nginx
