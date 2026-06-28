@@ -1,0 +1,17 @@
+# Secrets — never commit
+*.pem
+*.key
+*_ed25519
+*_rsa
+.env
+.env.*
+secrets/
+keys/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/

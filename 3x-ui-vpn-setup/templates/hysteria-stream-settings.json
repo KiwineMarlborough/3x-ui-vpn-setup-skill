@@ -1,0 +1,16 @@
+{
+  "network": "hysteria",
+  "security": "none",
+  "hysteriaSettings": {
+    "version": 2,
+    "up": "100 Mbps",
+    "down": "100 Mbps",
+    "ignoreClientBandwidth": false
+  },
+  "hysteria2Settings": {
+    "version": 2,
+    "up": "100 Mbps",
+    "down": "100 Mbps",
+    "ignoreClientBandwidth": false
+  }
+}
