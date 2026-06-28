@@ -1,5 +1,5 @@
 {
-  "Name": "Meridian",
+  "Name": "SplitHome",
   "GlobalProxy": "true",
   "RemoteDNSType": "DoH",
   "RemoteDNSDomain": "https://cloudflare-dns.com/dns-query",

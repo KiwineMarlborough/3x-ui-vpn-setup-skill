@@ -1,69 +1,96 @@
 ---
 name: 3x-ui-vpn-setup
 description: >
-  Set up and maintain a personal 3X-UI (MHSanaei) VPN server: VLESS Reality, XHTTP,
-  Podkop TCP, Hysteria2, custom subscription paths, nginx CDN fallback, Happ Plus
-  Meridian routing, UFW, Let's Encrypt. Use when asked to configure a new VPS,
-  fix 3X-UI/Xray, subscription 404/500, Hysteria version errors, or /3x-ui-vpn-setup.
-  Never patch 3X-UI binaries — panel, API, and SQLite only.
+  Autonomous setup of a personal 3X-UI VPN on a fresh Linux VPS via SSH: VLESS Reality
+  (primary), XHTTP, TCP Podkop, Hysteria2, Happ routing in subscription (DoH), custom sub
+  paths, optional nginx CDN fallback, UFW, Let's Encrypt. Use for new server setup, 3X-UI
+  fixes, subscription 404/500, Hysteria version errors. Triggers: 3x-ui, xray, reality,
+  hysteria2, happ routing, /3x-ui-vpn-setup. Never patch binaries — panel, API, SQLite only.
+license: MIT
+compatibility: claude-code, codex, qwen-code, opencode, grok-build, antigravity
+metadata:
+  author: KiwineMarlborough
+  standard: agentskills.io
 ---
 
-# 3X-UI VPN Setup Skill
+# 3X-UI Personal VPN — Full Server Setup
 
-Expert workflow for **personal** 3X-UI v3.x + Xray VPN servers. Works with Grok, Cursor, Claude Code, and `npx skills add`.
+End-to-end workflow for an AI agent with **SSH access to a clean Linux VPS** (Ubuntu 22.04/24.04).
+Target: personal tunnel (not commercial VPN resale). **Reality is the primary stealth protocol** — not plain TLS on 443.
+
+Compatible agents: Claude Code, OpenAI Codex, Qwen Code, OpenCode, Grok Build, Google Antigravity (Agent Skills open standard).
+
+## Prerequisites from user
+
+Collect before running commands:
+
+| Input | Example | Required |
+|-------|---------|----------|
+| SSH host | `203.0.113.10` | yes |
+| SSH user | `root` or `deploy` | yes |
+| SSH key or password | ed25519 key path | yes |
+| Panel domain | `panel.vpn.example.com` | recommended |
+| VPN/CDN domain | `cdn.vpn.example.com` | recommended |
+| Country label | `DE`, `NL`, `FI` | yes (for profile names) |
+| Reality SNI (borrowed) | `pixelforge.pics` | yes — legit external site |
+| Happ split .ru direct? | yes/no | default yes |
+| nginx fake site on 443? | yes/no | default yes |
+
+**Never** hardcode user domains, passwords, tokens, or UUIDs in git or chat logs.
 
 ## Hard rules
 
-1. **Do not patch** `/usr/local/x-ui/x-ui`, Xray binaries, or 3X-UI source.
-2. Configure via **panel**, **3X-UI API**, **SQLite** (`/etc/x-ui/x-ui.db`), **UFW**, **nginx**, **certbot**.
-3. **Never commit or paste** real passwords, API tokens, UUIDs, or private keys into public docs.
-4. Ask the user for credentials via secure channel; use placeholders in examples.
-5. After risky changes (`ufw`, `sshd`, `x-ui restart`) — verify connectivity before continuing.
-6. Tag commands `[MASTER]` / `[SLAVE]` when multiple servers.
+1. Do **not** patch `/usr/local/x-ui/x-ui`, Xray binaries, or 3X-UI source.
+2. Configure via **panel UI**, **3X-UI REST API**, **SQLite** (`/etc/x-ui/x-ui.db`), **UFW**, **nginx**, **certbot**.
+3. Execute commands yourself over SSH — do not only tell the user what to run.
+4. Confirm SSH still works after `ufw`, `sshd`, or firewall changes.
+5. Run verification checklist before claiming success.
+6. Tag multi-server steps `[MASTER]` / `[SLAVE]`.
 
-## Intake (ask first)
-
-| Question | Why |
-|----------|-----|
-| Master location (DE/EU)? Slave (RU) later? | Architecture |
-| Domain(s): panel vs CDN/VPN split? | TLS + SNI |
-| Client: Happ Plus, router, both? | Routing + profiles |
-| Protocols: Reality, XHTTP, TCP Podkop, Hysteria2? | Inbound plan |
-| Nginx fallback on 443? | Port conflict |
-| Custom sub paths (not `/sub/`)? | Security |
-
-## Recommended architecture (2026 personal tunnel)
+## Target architecture
 
 ```
-panel01.example.com:29800  → 3X-UI panel (LE cert, webDomain lock)
-cdn01.example.com          → VPN inbounds + subscription :2096
+panel.<domain>:29800/<webBasePath>  → 3X-UI admin (LE cert, webDomain lock)
+cdn.<domain>                        → VPN endpoints + subscription :2096
 ```
 
-**Active inbounds (example):**
+### Four production inbounds (create all)
 
-| Profile | Protocol | Port | Notes |
-|---------|----------|------|-------|
-| DE-Reality-Vision | VLESS Reality | 8443 | `flow=xtls-rprx-vision`, borrowed SNI (e.g. legit site) |
-| DE-TCP-Podkop | VLESS TLS TCP | 8444 | `flow` empty for Podkop |
-| DE-XHTTP-Mobile | VLESS XHTTP | 2053 | Mobile bypass |
-| DE-Hysteria2 | hysteria | 36712/udp | `auth` field, see gotchas |
+| # | Name pattern | Protocol | Port | Purpose |
+|---|--------------|----------|------|---------|
+| 1 | `{CC}-Reality-Vision` | VLESS Reality | **8443** | **Primary** — `flow=xtls-rprx-vision` |
+| 2 | `{CC}-TCP-Podkop` | VLESS TLS TCP | **8444** | Routers / Podkop — **empty flow** |
+| 3 | `{CC}-XHTTP-Mobile` | VLESS XHTTP | **2053** | Mobile DPI bypass |
+| 4 | `{CC}-Hysteria2` | hysteria | **36712/udp** | UDP profile — `auth` field |
 
-**Disabled:** VLESS on **443** if nginx CDN fallback uses 443.
+**Do not** put VLESS on port **443** if nginx CDN fallback occupies 443.
 
-`shareAddr` on all inbounds: VPN domain (e.g. `cdn01.example.com`), strategy `custom`.
+`shareAddr` on every inbound: VPN domain (`cdn.<domain>`), strategy `custom`.
 
-## Phase 1 — Server baseline
+### Reality setup (inbound #1)
+
+- `security`: reality
+- `serverName` / SNI: **borrowed** legitimate site (user picks or suggest `pixelforge.pics`)
+- `dest`: `<sni>:443`
+- `fingerprint`: `firefox` or `chrome`
+- Generate keypair in panel; set `shortIds`, `publicKey`
+- Client `flow`: `xtls-rprx-vision` via `client_inbounds` override
+
+Reality SNI is **not** your VPN domain — it camouflages TLS. Traffic still hits your VPS IP.
+
+## Phase 1 — Baseline server `[MASTER]`
 
 ```bash
-apt update && apt upgrade -y
-ufw enable
-ufw allow OpenSSH
-ufw allow 80/tcp
-ufw allow 443/tcp
-# Add VPN ports after inbounds exist — see references/diagnostics.md
+sudo apt update && sudo apt upgrade -y
+sudo ufw enable
+sudo ufw allow OpenSSH
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 ```
 
-SSH: key-based auth, optional ICMP drop. Confirm reconnect after `sshd` changes.
+After creating inbounds, also allow: `29800 2096 8443 8444 2053 10443/tcp` and `36712/udp`.
+
+Prefer SSH keys; disable password auth only after key login verified.
 
 ## Phase 2 — Install 3X-UI
 
@@ -71,111 +98,138 @@ SSH: key-based auth, optional ICMP drop. Confirm reconnect after `sshd` changes.
 bash <(curl -Ls https://raw.githubusercontent.com/MHSanaei/3x-ui/master/install.sh)
 ```
 
-Immediately: change panel password, note `webBasePath`, create API token.
+Immediately:
+- Change default panel password
+- Record `webBasePath` (required in URL)
+- Create API token (Panel → API Tokens)
+- Note panel port (default 2053 install may differ — often 29800 after hardening)
 
-## Phase 3 — TLS and domains
+## Phase 3 — DNS and TLS
 
-- **Panel cert** must match `webDomain` (panel01) — mismatch causes TLS handshake errors.
-- **Subscription cert** on CDN domain (cdn01).
-- Root panel URL without `webBasePath` → 404 by design.
+1. User creates **A records** for `panel.*` and `cdn.*` → VPS IP.
+2. Verify: `dig +short panel.<domain>` returns VPS IP.
+3. Issue Let's Encrypt in panel for **both** domains (or certbot).
+4. Set `webDomain` = panel domain; `webCertFile` / `webKeyFile` = panel cert paths.
+5. Subscription cert on CDN domain.
 
-## Phase 4 — Inbounds and client
+**Panel TLS mismatch** (cdn cert on panel domain) → browser handshake error.
 
-- One client per device type (phone vs router) is optional but recommended.
-- `limitIp: 0` allows phone + router on same user; separate users = cleaner revoke/stats.
-- `subEncrypt = false` if client expects plain vless/hysteria2 lines.
+## Phase 4 — Clients
+
+| User | email pattern | Notes |
+|------|---------------|-------|
+| Phone | `user-phone@<project>` | All 4 inbounds |
+| Router (optional) | `user-router@<project>` | TCP 8444 + Reality 8443 only |
+
+- `limitIp: 0` — phone + router on same user OK
+- Separate users — cleaner revoke and stats
+- `subEncrypt = false` for plain vless/hysteria2 lines in Happ
 
 ## Phase 5 — Custom subscription paths
 
-Replace default `/sub/` and `/json/` via API `setting/update` (full settings object, strip `has*` keys):
+Replace default `/sub/` and `/json/` (security warning in panel):
 
-```
-subPath     → /s7kM2pQx9v/   (example — generate random)
-subJsonPath → /j4nR8wLz3k/
-subJsonEnable = true
-```
+1. `POST /panel/api/setting/all` → get full settings
+2. Set random paths, e.g. `/xK9mP2qR/` and `/j4nR8wLz3/`
+3. `subJsonEnable = true`
+4. `POST /panel/api/setting/update` with **full** object (strip `has*` keys)
+5. Restart `x-ui`
 
-404 on subscription → check full `sub_id` (36-char UUID, not truncated).
+404 on sub → truncated `sub_id` (must be full 36-char UUID).
 
-## Phase 6 — Happ Meridian routing
+## Phase 6 — Happ routing in subscription
 
-Enable `subEnableRouting = true`. Push profile via `subRoutingRules` as:
+Enable split tunnel + encrypted DNS for Happ Plus clients.
 
-```
+1. `subEnableRouting = true`
+2. Build profile from `templates/happ-routing-profile.json` (customize `Name`, `DirectSites`)
+3. Encode:
+
+```text
 happ://routing/onadd/<base64-json>
 ```
 
-Use template: `templates/meridian-routing.json` (DoH for both Remote and Domestic).
+4. Set as `subRoutingRules` via API; restart `x-ui`
+5. Verify headers on sub URL: `Routing-Enable: true`
 
-After update: user pull-to-refreshes subscription in Happ Plus.
+Default profile: `.ru` / `.рф` / `geosite:category-ru` → direct; rest → VPN. Both DNS channels use **DoH**.
 
 Details: `references/happ-routing.md`
 
-## Phase 7 — Nginx CDN fallback (optional)
+## Phase 7 — nginx CDN fallback (recommended)
 
-nginx on 443 serves fake CDN site; Xray Reality on 8443. **Do not enable inbound on 443** without moving nginx.
+Serve fake static site on **443**; keep Reality on **8443**.
+
+- Install nginx, vhost for `cdn.<domain>`
+- Copy LE cert to nginx ssl dir; sync on renewal
+- **Keep inbound on 443 disabled**
 
 Details: `references/nginx-fallback.md`
 
-## Critical gotchas
+## Phase 8 — Hysteria2 (critical)
 
-Read `references/gotchas.md` before touching Hysteria2 or JSON subscription.
+Before enabling inbound #4, read `references/gotchas.md`.
 
-Quick list:
+Minimum stream shape — use `templates/hysteria-stream-settings.json`:
+- `network`: `hysteria` (never `hysteria2` in stream for Xray 26.x)
+- Both `hysteriaSettings` and `hysteria2Settings` with `"version": 2`
+- Client field: `auth` (not `password`)
 
-- Hysteria: `network=hysteria`, `settings.version=2`, **both** `hysteriaSettings` and `hysteria2Settings` with `version: 2`
-- Client field: `auth` not `password`
-- Xray 26.x: `network: hysteria2` in stream → crash
-- JSON sub HTTP 500 → often Hysteria stream shape
-- `version != 2` in log → fix inbound #5 stream_settings
-- Reality SNI = borrowed domain, not your VPN domain
-
-## API pattern (run on server)
+## API pattern (on server)
 
 ```bash
-R='--resolve panel01.example.com:29800:127.0.0.1'
-BASE='https://panel01.example.com:29800/<webBasePath>'
-TOKEN='<api-token>'
+R='--resolve panel.<domain>:<panel-port>:127.0.0.1'
+BASE="https://panel.<domain>:<panel-port>/<webBasePath>"
+TOKEN='<from-user>'
 
 curl -sk $R -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
   -X POST "$BASE/panel/api/setting/all" -d '{}'
 ```
 
-`setting/update` requires **complete** settings object.
-
-## Verification checklist
+## Verification (mandatory)
 
 ```bash
 sudo x-ui status
 sudo /usr/local/x-ui/bin/xray-linux-amd64 run -test -c /usr/local/x-ui/bin/config.json
-curl -sk -o /dev/null -w '%{http_code}\n' 'https://cdn01.example.com:2096/<subPath>/<sub_id>'
-curl -sk -o /dev/null -w '%{http_code}\n' 'https://cdn01.example.com:2096/<jsonPath>/<sub_id>'
+curl -sk -o /dev/null -w 'sub %{http_code}\n' \
+  "https://cdn.<domain>:2096/<subPath>/<sub_id>"
+curl -sk -o /dev/null -w 'json %{http_code}\n' \
+  "https://cdn.<domain>:2096/<jsonPath>/<sub_id>"
 ss -tlnp | grep -E '8443|8444|2053|2096'
 ss -ulnp | grep 36712
+curl -skI "https://cdn.<domain>:2096/<subPath>/<sub_id>" | grep -i routing
 ```
 
-Expect: Xray `Configuration OK`, subscription + JSON `200`, 4 profiles in sub.
-
-Full diagnostics: `references/diagnostics.md`
-
-## Slave node (future)
-
-Meridian routing (client-side .ru direct) ≠ server cascade. For RU IP on .ru sites: add Slave node in panel → Nodes, outbound + routing on Master. See handoff pattern in references.
+Pass criteria:
+- Xray: `Configuration OK`
+- Sub + JSON: HTTP 200
+- 4 profiles in subscription body
+- Routing header present if enabled
 
 ## What NOT to do
 
-- Change `webBasePath` without updating bookmarks/scripts
-- Revert to `/sub/` without reason
-- Enable inbound #1 on 443 while nginx holds 443
-- Route bare VPS IP in Podkop when split-routing panel only (VPN-in-VPN risk)
+- Enable VLESS on 443 while nginx uses 443
+- Patch 3X-UI binary
+- Change `webBasePath` without updating user bookmarks
+- Use VPN domain as Reality SNI
+- Set `network: hysteria2` in stream settings (Xray 26.x crash)
+- Commit secrets to git
 
 ## Reference files
 
 | File | Content |
 |------|---------|
-| `references/gotchas.md` | Hysteria, JSON sub, Reality |
-| `references/happ-routing.md` | Meridian profile, DoH |
-| `references/nginx-fallback.md` | Port 443 layout |
-| `references/diagnostics.md` | Commands cheat sheet |
-| `templates/meridian-routing.json` | Routing profile JSON |
-| `templates/hysteria-stream-settings.json` | Working Hysteria stream |
+| `references/gotchas.md` | Hysteria, JSON 500, Reality |
+| `references/happ-routing.md` | Subscription routing + DoH |
+| `references/nginx-fallback.md` | Port layout |
+| `references/diagnostics.md` | Troubleshooting |
+| `references/agent-install.md` | Per-agent install paths |
+| `templates/happ-routing-profile.json` | Routing JSON template |
+| `templates/happ-routing-profile-ru.json` | .ru direct variant |
+| `templates/happ-routing-global.json` | Full tunnel variant |
+| `templates/hysteria-stream-settings.json` | Hysteria stream |
+
+## Interactive mode
+
+Work **step by step**: run commands, show output, fix errors, re-verify. On `version != 2` or JSON 500 → go to `references/gotchas.md` immediately.
