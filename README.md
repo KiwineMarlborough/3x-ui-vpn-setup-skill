@@ -1,5 +1,18 @@
 # 3x-ui-vpn-setup — Universal Agent Skill v1.2
 
+> **Tired of blocked VPN services?** Spin up **your own** server in an evening — no manual Xray configs.
+>
+> **How it works:** install this skill into an AI agent and **hand it the job**. The agent SSHes into your VPS and sets up 3X-UI, Reality, XHTTP, Hysteria2, subscription, and Happ routing by itself.
+>
+> **You only provide:**
+> - VPS **IP** and **two domains** (panel + CDN, e.g. `panel.example.com`, `cdn.example.com`)
+> - **SSH access** (ed25519 **key** preferred over password)
+> - **Sudo** for setup — ideally **≤ 30 days**, then rotate password or use key-only sudo / SSH tunnel for panel
+>
+> Everything else — certs, inbounds, routing — the agent handles via the skill playbook.
+
+🇷🇺 **Русский:** [README.ru.md](README.ru.md) · [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md)
+
 Open-source [Agent Skill](https://agentskills.io/) for AI agents to **autonomously set up a personal 3X-UI VPN** on a fresh Linux VPS via SSH.
 
 **Stack:** VLESS **Reality** + XHTTP + TCP Podkop + Hysteria2 + Happ routing (DoH) + nginx CDN fallback.

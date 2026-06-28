@@ -1,6 +1,10 @@
 # Quickstart (5 minutes)
 
+🇷🇺 Русская инструкция: [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md) · [README.ru.md](README.ru.md)
+
 For you or a friend setting up a personal VPN with any AI agent.
+
+> Give the skill to your AI agent with SSH access — it does the rest. You only provide IP, domains, and temporary sudo (≤ 30 days) or SSH key.
 
 ## 1. Install skill
 

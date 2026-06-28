@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1] — 2026-06-29
+
+### Added
+- `README.ru.md` — Russian overview with «give skill to AI agent» intro
+- `ИНСТРУКЦИЯ.md` — full Russian step-by-step guide
+- English README intro block + links to Russian docs
+
 ## [1.2.0] — 2026-06-29
 
 ### Added — documentation

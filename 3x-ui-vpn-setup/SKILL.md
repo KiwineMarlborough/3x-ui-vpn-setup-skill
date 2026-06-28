@@ -11,7 +11,7 @@ compatibility: claude-code, codex, qwen-code, opencode, grok-build, antigravity
 metadata:
   author: KiwineMarlborough
   standard: agentskills.io
-  version: "1.2"
+  version: "1.2.1"
 ---
 
 # 3X-UI Personal VPN — Full Server Setup
