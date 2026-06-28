@@ -5,6 +5,7 @@
 ### Added
 - `README.ru.md` — Russian overview with «give skill to AI agent» intro
 - `ИНСТРУКЦИЯ.md` — full Russian step-by-step guide
+- `QUICKSTART.ru.md` — Russian 5-minute quickstart
 - English README intro block + links to Russian docs
 
 ## [1.2.0] — 2026-06-29

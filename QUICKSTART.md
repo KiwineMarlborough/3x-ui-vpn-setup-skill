@@ -1,6 +1,6 @@
 # Quickstart (5 minutes)
 
-🇷🇺 Русская инструкция: [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md) · [README.ru.md](README.ru.md)
+🇷🇺 Russian: [QUICKSTART.ru.md](QUICKSTART.ru.md) · [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md) · [README.ru.md](README.ru.md)
 
 For you or a friend setting up a personal VPN with any AI agent.
 

@@ -13,8 +13,9 @@
 
 **Стек:** VLESS **Reality** + XHTTP + TCP Podkop + Hysteria2 + Happ routing (DoH) + nginx CDN fallback.
 
-📄 **[ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md)** — пошагово на русском (5 минут)  
-📄 **[QUICKSTART.md](QUICKSTART.md)** — English quickstart  
+📄 **[QUICKSTART.ru.md](QUICKSTART.ru.md)** — быстрый старт (5 минут)  
+📄 **[ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md)** — полная пошаговая инструкция  
+📄 **[QUICKSTART.md](QUICKSTART.md)** — English quickstart
 📄 **[CHANGELOG.md](CHANGELOG.md)** — история версий
 
 ---

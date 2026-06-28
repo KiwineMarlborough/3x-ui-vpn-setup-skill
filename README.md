@@ -17,7 +17,7 @@ Open-source [Agent Skill](https://agentskills.io/) for AI agents to **autonomous
 
 **Stack:** VLESS **Reality** + XHTTP + TCP Podkop + Hysteria2 + Happ routing (DoH) + nginx CDN fallback.
 
-📄 **[QUICKSTART.md](QUICKSTART.md)** — 5-minute guide  
+📄 **[QUICKSTART.md](QUICKSTART.md)** — 5-minute guide · [QUICKSTART.ru.md](QUICKSTART.ru.md)
 📄 **[CHANGELOG.md](CHANGELOG.md)** — version history
 
 ## Install
