@@ -11,14 +11,20 @@
 >
 > Everything else — certs, inbounds, routing — the agent handles via the skill playbook.
 
-🇷🇺 **Русский:** [README.ru.md](README.ru.md) · [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md)
-
 Open-source [Agent Skill](https://agentskills.io/) for AI agents to **autonomously set up a personal 3X-UI VPN** on a fresh Linux VPS via SSH.
 
 **Stack:** VLESS **Reality** + XHTTP + TCP Podkop + Hysteria2 + Happ routing (DoH) + nginx CDN fallback.
 
-📄 **[QUICKSTART.md](QUICKSTART.md)** — 5-minute guide · [QUICKSTART.ru.md](QUICKSTART.ru.md)
-📄 **[CHANGELOG.md](CHANGELOG.md)** — version history
+## Documentation / Документация
+
+| | English | Русский |
+|---|---------|---------|
+| Overview | [README.md](README.md) | [README.ru.md](README.ru.md) |
+| Quickstart | **[QUICKSTART.md](QUICKSTART.md)** | **[QUICKSTART.ru.md](QUICKSTART.ru.md)** |
+| Full guide | — | [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md) |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) | [CHANGELOG.md](CHANGELOG.md) |
+
+Both quickstart files are kept — English and Russian are separate.
 
 ## Install
 

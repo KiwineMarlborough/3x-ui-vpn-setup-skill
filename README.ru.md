@@ -13,10 +13,16 @@
 
 **Стек:** VLESS **Reality** + XHTTP + TCP Podkop + Hysteria2 + Happ routing (DoH) + nginx CDN fallback.
 
-📄 **[QUICKSTART.ru.md](QUICKSTART.ru.md)** — быстрый старт (5 минут)  
-📄 **[ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md)** — полная пошаговая инструкция  
-📄 **[QUICKSTART.md](QUICKSTART.md)** — English quickstart
-📄 **[CHANGELOG.md](CHANGELOG.md)** — история версий
+## Документация / Documentation
+
+| | Русский | English |
+|---|---------|---------|
+| Обзор | [README.ru.md](README.ru.md) | [README.md](README.md) |
+| Быстрый старт | **[QUICKSTART.ru.md](QUICKSTART.ru.md)** | **[QUICKSTART.md](QUICKSTART.md)** |
+| Полная инструкция | [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md) | — |
+| История версий | [CHANGELOG.md](CHANGELOG.md) | [CHANGELOG.md](CHANGELOG.md) |
+
+Оба quickstart на месте — русский и английский в отдельных файлах.
 
 ---
 

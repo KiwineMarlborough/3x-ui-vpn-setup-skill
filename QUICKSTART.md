@@ -1,10 +1,13 @@
-# Quickstart (5 minutes)
+# Quickstart (5 minutes) — English
 
-🇷🇺 Russian: [QUICKSTART.ru.md](QUICKSTART.ru.md) · [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md) · [README.ru.md](README.ru.md)
+| Language | File |
+|----------|------|
+| **English** | **QUICKSTART.md** (this file) |
+| **Русский** | [QUICKSTART.ru.md](QUICKSTART.ru.md) · [ИНСТРУКЦИЯ.md](ИНСТРУКЦИЯ.md) |
 
 For you or a friend setting up a personal VPN with any AI agent.
 
-> Give the skill to your AI agent with SSH access — it does the rest. You only provide IP, domains, and temporary sudo (≤ 30 days) or SSH key.
+> **Tired of blocked VPN services?** Install this skill into an AI agent with SSH access — **it does the rest**. You only provide VPS IP, two domains, and temporary sudo (≤ 30 days) or an SSH key.
 
 ## 1. Install skill
 
