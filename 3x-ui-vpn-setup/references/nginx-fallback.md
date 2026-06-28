@@ -20,30 +20,20 @@ Port 443 serves a **legitimate-looking website** (fake CDN landing), not obvious
 2. UFW: allow 80, 443, 10443/tcp.
 3. Sync LE cert: when `cdn01` cert renews, copy or symlink to nginx ssl dir.
 
-## Static page
-
-Copy generic landing from skill repo:
+## Automated deploy
 
 ```bash
-sudo mkdir -p /var/www/cdn-fallback
-sudo cp assets/cdn-fallback/index.html /var/www/cdn-fallback/
-# Customize title/branding in index.html before deploy
+export CDN_DOMAIN=cdn.vpn.example.com
+export CERT_SRC=/root/cert/cdn.vpn.example.com
+sudo -E bash scripts/deploy-nginx-fallback.sh
+sudo -E bash scripts/deploy-cert-hook.sh
 ```
 
-Skill path: `3x-ui-vpn-setup/assets/cdn-fallback/index.html`
+Uses `templates/nginx-cdn.conf` + `assets/cdn-fallback/index.html`.
 
-## Minimal nginx vhost sketch
+## Manual / customize
 
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name cdn01.example.com;
-    ssl_certificate     /etc/nginx/ssl/cdn/fullchain.pem;
-    ssl_certificate_key /etc/nginx/ssl/cdn/privkey.pem;
-    root /var/www/cdn-fallback;
-    index index.html;
-}
-```
+Edit `index.html` title/branding before deploy. Full vhost: `templates/nginx-cdn.conf`.
 
 ## Fallback in disabled inbound #1 (optional future)
 

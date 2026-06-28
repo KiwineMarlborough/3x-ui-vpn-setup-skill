@@ -14,6 +14,7 @@ Thanks for improving this open-source agent skill.
 - One topic per PR (e.g. "add router section", "fix hysteria script")
 - Test scripts on Ubuntu 22.04/24.04 if you change `scripts/`
 - Update `SKILL.md` reference table when adding docs
+- Update `CHANGELOG.md` for user-visible changes
 
 ## Issues
 

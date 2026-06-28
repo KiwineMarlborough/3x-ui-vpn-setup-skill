@@ -21,13 +21,16 @@ Embed **client-side split routing** in the 3X-UI subscription response so Happ P
 
 | File | Use case |
 |------|----------|
-| `templates/happ-routing-profile.json` | Split: `.ru` direct, rest VPN (default for RU users) |
+| `templates/happ-routing-profile-ru.json` | **Default for RU users** — `.ru` + geosite direct |
+| `templates/happ-routing-profile.json` | Basic split (lighter DirectSites list) |
+| `templates/happ-routing-banks-ru.json` | Extended banks / gosuslugi / Yandex direct |
+| `templates/happ-routing-corporate.json` | `.ru` + `.local` + corp domains |
 | `templates/happ-routing-global.json` | Full tunnel, no direct sites |
-| Customize `DirectSites` | Add `.local`, corporate domains, etc. |
+| Customize `DirectSites` | Add your domains to any template |
 
 Rename `"Name"` field to anything (e.g. `SplitHome`, `MyVPN`) — visible in Happ routing list.
 
-## DNS (DoH both channels)
+## DNS (DoH both channels — recommended)
 
 | Channel | Type | Endpoint | IP pin |
 |---------|------|----------|--------|
@@ -35,6 +38,18 @@ Rename `"Name"` field to anything (e.g. `SplitHome`, `MyVPN`) — visible in Hap
 | Domestic (direct) | DoH | `https://dns.google/dns-query` | 8.8.8.8 |
 
 `DnsHosts` prevents ISP poisoning of resolver hostnames.
+
+### DoH vs DoT vs DoU
+
+| Type | Happ fields | Pros | Cons |
+|------|-------------|------|------|
+| **DoH** | `RemoteDNSType: DoH` + `RemoteDNSDomain` URL | HTTPS camouflage, works on restrictive Wi‑Fi | Slightly more overhead |
+| **DoT** | `DoT` + hostname | Standard TLS DNS | Distinct port 853, easier to block |
+| **DoU** | `DoU` + IP | Fast UDP | Plain UDP DNS — ISP can see queries on direct path |
+
+**Skill default: DoH for both Remote and Domestic** — matches commercial VPN apps and resists domestic ISP DNS hijacking on split-tunnel direct path.
+
+To use DoT instead, change e.g. `DomesticDNSType` to `DoT`, `DomesticDNSDomain` to `dns.google`, keep `DomesticDNSIP` pinned in `DnsHosts`.
 
 ## Apply via API
 

@@ -35,10 +35,17 @@ sudo ufw status numbered
 ## Subscription
 
 ```bash
-SUB='https://cdn01.example.com:2096/<subPath>/<sub_id>'
+SUB='https://cdn.vpn.example.com:2096/<subPath>/<sub_id>'
 curl -sk -o /dev/null -w 'sub %{http_code}\n' "$SUB"
-curl -sk -o /dev/null -w 'json %{http_code}\n' "https://cdn01.example.com:2096/<jsonPath>/<sub_id>"
+curl -sk -o /dev/null -w 'json %{http_code}\n' "https://cdn.vpn.example.com:2096/<jsonPath>/<sub_id>"
 curl -skI "$SUB" | grep -iE 'routing|http'
+```
+
+## Read-only audit
+
+```bash
+export CDN_DOMAIN=cdn.vpn.example.com SUB_ID=<uuid>
+bash scripts/audit-server.sh
 ```
 
 ## SQLite quick queries

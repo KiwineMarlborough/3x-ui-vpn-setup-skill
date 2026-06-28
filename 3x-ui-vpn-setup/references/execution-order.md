@@ -9,14 +9,14 @@ Wrong order causes Xray crash, JSON 500, or nginx port conflict.
 1. Baseline (apt, UFW basics)
 2. Install 3X-UI
 3. Panel harden (password, webBasePath, API token)
-4. DNS A records → wait propagation
+4. DNS A records → wait propagation — `dns-setup.md`
 5. TLS certs (panel + cdn)
-6. nginx on 443 (if used) — BEFORE any inbound on 443
+6. nginx on 443 — `deploy-nginx-fallback.sh` + `deploy-cert-hook.sh` — BEFORE any inbound on 443
 7. Inbound Reality 8443
 8. Inbound TCP Podkop 8444
 9. Inbound XHTTP 2053
 10. Client(s) + attach to inbounds
-11. Custom sub paths + subEncrypt=false
+11. Custom sub paths + subEncrypt=false — `set-sub-paths.py`, `panel-settings.md`
 12. Test plain subscription HTTP 200 (3 profiles)
 13. Inbound Hysteria 36712 — fix stream, restart
 14. Test JSON subscription HTTP 200

@@ -13,21 +13,15 @@ When LE renews `cdn.<domain>` cert, nginx copy may stale.
 
 ## After renewal hook
 
-Create `/etc/letsencrypt/renewal-hooks/deploy/sync-nginx-cdn.sh`:
+Use skill script:
 
 ```bash
-#!/bin/bash
-CDN_DOMAIN="cdn.vpn.example.com"
-SRC="/root/cert/${CDN_DOMAIN}"
-DST="/etc/nginx/ssl/cdn"
-cp "${SRC}/fullchain.pem" "${DST}/fullchain.pem"
-cp "${SRC}/privkey.pem" "${DST}/privkey.pem"
-nginx -t && systemctl reload nginx
+export CDN_DOMAIN=cdn.vpn.example.com
+export CERT_SRC=/root/cert/cdn.vpn.example.com
+sudo -E bash scripts/deploy-cert-hook.sh
 ```
 
-```bash
-sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/sync-nginx-cdn.sh
-```
+Installs `/etc/letsencrypt/renewal-hooks/deploy/sync-nginx-cdn.sh`.
 
 If 3X-UI manages certs in `/root/cert/`, sync from there after panel renewal too.
 
