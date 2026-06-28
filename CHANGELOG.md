@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.2] — 2026-06-29
+
+### Fixed
+- `fix-hysteria-stream.py` — preserve existing Hysteria clients when setting `version: 2`
+- `fix-podkop-flow.py` — default scopes to Podkop inbound clients only; `--all` for global (dangerous)
+- `set-sub-paths.py` — `--sqlite-only` works without API creds; fallback returns failure if DB missing
+- `verify-server.sh` — CDN HTTPS check validates HTTP 200, not curl exit code
+
 ## [1.2.1] — 2026-06-29
 
 ### Added

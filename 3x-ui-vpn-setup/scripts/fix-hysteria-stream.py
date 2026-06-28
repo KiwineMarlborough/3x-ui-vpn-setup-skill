@@ -32,21 +32,32 @@ def main() -> int:
     conn = sqlite3.connect(DB)
     cur = conn.cursor()
     if args.inbound_id:
-        cur.execute("SELECT id,remark,stream_settings FROM inbounds WHERE id=?", (args.inbound_id,))
+        cur.execute(
+            "SELECT id,remark,stream_settings,settings FROM inbounds WHERE id=?",
+            (args.inbound_id,),
+        )
     else:
-        cur.execute("SELECT id,remark,stream_settings FROM inbounds WHERE protocol='hysteria' OR remark LIKE '%Hysteria%' LIMIT 1")
+        cur.execute(
+            "SELECT id,remark,stream_settings,settings FROM inbounds "
+            "WHERE protocol='hysteria' OR remark LIKE '%Hysteria%' LIMIT 1"
+        )
     row = cur.fetchone()
     if not row:
         print("No hysteria inbound found")
         return 1
-    iid, remark, stream_raw = row
+    iid, remark, stream_raw, settings_raw = row
     stream = json.loads(stream_raw or "{}")
     for key in ("hysteriaSettings", "hysteria2Settings"):
         stream[key] = hy_template[key]
     stream["network"] = "hysteria"
     cur.execute("UPDATE inbounds SET stream_settings=? WHERE id=?", (json.dumps(stream), iid))
-    cur.execute("UPDATE inbounds SET settings=? WHERE id=? AND (settings IS NULL OR settings NOT LIKE '%\"version\": 2%')",
-                (json.dumps({"version": 2, "clients": []}), iid))
+
+    settings = json.loads(settings_raw or "{}")
+    if not isinstance(settings, dict):
+        settings = {}
+    settings["version"] = 2
+    settings.setdefault("clients", [])
+    cur.execute("UPDATE inbounds SET settings=? WHERE id=?", (json.dumps(settings), iid))
     conn.commit()
     conn.close()
     print(f"Updated inbound #{iid} ({remark})")

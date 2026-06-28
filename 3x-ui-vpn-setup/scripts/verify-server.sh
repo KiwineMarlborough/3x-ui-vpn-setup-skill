@@ -89,6 +89,7 @@ if [[ -n "$PANEL_BASE" && -n "$PANEL_TOKEN" ]]; then
 fi
 
 systemctl is-active nginx >/dev/null 2>&1 && ok "nginx active" || warn "nginx not running"
-curl -sk -o /dev/null -w '' "https://${CDN_DOMAIN}/" 2>/dev/null && ok "HTTPS :443 CDN page reachable" || warn "CDN HTTPS check failed"
+CDN_CODE=$(curl -sk -o /dev/null -w '%{http_code}' "https://${CDN_DOMAIN}/" 2>/dev/null || echo "000")
+[[ "$CDN_CODE" == "200" ]] && ok "HTTPS :443 CDN page HTTP $CDN_CODE" || warn "CDN HTTPS check failed (HTTP $CDN_CODE, expected 200)"
 
 echo "=== Done ==="

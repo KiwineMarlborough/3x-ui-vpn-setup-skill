@@ -55,8 +55,8 @@ After panel update
 |--------|------|----------|
 | `audit-server.sh` | None (read-only) | Always first |
 | `verify-server.sh` | None | Confirm fix |
-| `fix-podkop-flow.py` | Low | Podkop TCP won't connect |
-| `set-sub-paths.py` | Medium | Sub 404 on custom paths |
+| `fix-podkop-flow.py` | Low | Podkop TCP won't connect (default: port 8444 clients only; `--all` is global) |
+| `set-sub-paths.py` | Medium | Sub 404; `--sqlite-only` if API unreachable |
 | `apply-routing.py` | Medium | Routing headers missing |
 | `fix-hysteria-stream.py` | Medium | JSON 500 / Xray won't start |
 | `deploy-cert-hook.sh` | Low | nginx TLS stale after LE renew |
