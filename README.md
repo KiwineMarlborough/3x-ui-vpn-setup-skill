@@ -38,15 +38,16 @@ Or slash command: `/3x-ui-vpn-setup`
 ## Structure
 
 ```
-SKILL.md                          # Main agent workflow
-references/
-  gotchas.md                      # Hysteria, Reality, JSON sub
-  happ-routing.md                 # Meridian + DoH
-  nginx-fallback.md               # Port 443 layout
-  diagnostics.md                  # Commands
-templates/
-  meridian-routing.json           # Happ routing profile
-  hysteria-stream-settings.json   # Working stream shape
+3x-ui-vpn-setup/
+  SKILL.md                        # Main agent workflow
+  references/
+    gotchas.md                    # Hysteria, Reality, JSON sub
+    happ-routing.md               # Meridian + DoH
+    nginx-fallback.md             # Port 443 layout
+    diagnostics.md                # Commands
+  templates/
+    meridian-routing.json         # Happ routing profile
+    hysteria-stream-settings.json # Working stream shape
 ```
 
 ## Principles
