@@ -87,3 +87,17 @@ Decode base64 after `happ://routing/onadd/` — confirm `DomesticDNSType: DoH`.
 - **This doc** = DNS on **client** (Happ), pushed via subscription
 - **Panel → Xray → DNS** = server-side; optional if all split is on client
 - Enable server DNS for routers without Happ routing support
+## Added in 1.3
+
+* **Compare with commercial profiles:** a typical "Liberty-style" profile decodes to the same idea as `happ-routing-profile-ru.json`
+  (`domain:.ru`, `domain:.xn--p1ai`, `geosite:category-ru` direct; private ranges direct; DoH both channels; Loyalsoldier geo files).
+  Optional extra direct range seen there: `100.64.0.0/10` (carrier-grade NAT, also Tailscale) — the shipped templates include it.
+  Pinning resolver hostnames in `DnsHosts` (as the templates do) is the safer variant.
+* **Decode a profile (yours or someone's):** the part after `happ://routing/add/` or `/onadd/` is base64 of JSON:
+  `python3 -c "import sys,base64,json;b=sys.argv[1];print(json.dumps(json.loads(base64.b64decode(b+'='*(-len(b)%4))),indent=1))" <base64>`.
+* **After a direct SQLite edit of `subRoutingRules` the panel keeps serving the OLD value until `systemctl restart x-ui`.**
+  Verify what is really served: `curl -skD- -o/dev/null <sub-url> | grep -i '^Routing:'` and decode it. Prefer `scripts/apply-routing.py`
+  (API) which avoids the stale cache.
+* **Scope:** routing is a Happ feature carried in the subscription. It does not apply to AmneziaVPN/AmneziaWG or OpenWrt
+  tunnels (`amneziawg.md`); there, split routing is the router tool's job.
+* Routing profile applies on the client only; server-side Xray routing cannot make `.ru` sites see the client's own IP.

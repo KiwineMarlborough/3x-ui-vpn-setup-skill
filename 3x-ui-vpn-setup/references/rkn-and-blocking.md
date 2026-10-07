@@ -58,3 +58,18 @@ Usually **not** needed for personal DE VPS. Last resort.
 - `references/reality-sni.md` — SNI validation
 - `references/protocol-selection.md` — profile choice
 - `references/warp-optional.md` — Cloudflare egress
+## Added in 1.3 — how servers actually get found, and what the skill does about it
+
+| Exposure | Why it matters | Mitigation in this skill |
+|----------|----------------|--------------------------|
+| Public panel hostname + certificate | listed forever in Certificate Transparency logs; a name like `panel…` says what it is; links your decoy domain to the same IP | no panel DNS record, tunnel-only access (`panel-tunnel-access.md`) |
+| Internet-wide port scans + TLS certificate grabs | the same real certificate on 443/8444/2053/2096/10443 = "proxy host" pattern | Reality (borrowed SNI) where the protocol allows; one SNI per Reality port; TLS inbounds are the weak spot (`inbounds.md`) |
+| Known scanner/botnet IPs hammering SSH, nginx, panel | noise, attack surface, probing | IPsum drop (`blocklist-ipsum-fail2ban.md`) + Fail2Ban |
+| Active probing of VLESS/Reality | probes get relayed to the borrowed site by design | correct `dest`, valid borrowed SNI (`reality-sni.md`) |
+| Datacenter IP | scored by classifiers regardless of protocol | **not fixable here** (new provider/IP or an extra egress hop) |
+| Cloudflare "to hide the IP" | the orange cloud breaks Reality/UDP/odd ports | never proxy the shared VPN hostname (`dns-setup.md`) |
+
+Reported by research in 2026 (not verified here): TSPU matches TLS ClientHello fingerprints (JA3/JA4) and behaviour, probes suspected
+proxies with varied handshakes, and blocked plain VLESS more aggressively than Reality. Use realistic client fingerprints (`firefox`/`chrome`).
+Hysteria2/AmneziaWG are UDP: a network that allows UDP can still pass them when TCP profiles are throttled — and the reverse.
+No protocol is guaranteed; keep several profiles and test from the networks you use.

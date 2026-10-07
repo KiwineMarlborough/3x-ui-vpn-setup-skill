@@ -106,3 +106,15 @@ Give user:
 - `CONTRIBUTING.md` — no secrets in PRs
 - `.gitignore` — `*.pem`, `keys/`, `.env.local`
 - `references/post-setup-handoff.md` — user deliverable template
+## Added in 1.3
+
+* **New secret-bearing artifacts:** AmneziaWG client `.conf` files (client private key + HeaderProtectionKey), the agent's SSH private key,
+  `x-ui.db` backups (all keys/passwords), the IPsum whitelist (your IPs — private, not secret). Keep them out of git, cloud-synced
+  folders and chat logs; deliver `.conf` files to the user's device through a direct file transfer and delete server-side copies.
+  `.gitignore` should cover `awg/`, `*.conf`, `keys/`, `*.tgz`.
+* **Never commit real hostnames/IPs even in examples** unless you accept them being public: a real Reality SNI or domain used as an
+  example becomes a shared fingerprint and links the author to the infrastructure.
+* **API token scope:** create the token for the work, revoke/rotate it afterwards (3.9 can rotate tokens from the CLI without losing scope).
+* **Pre-push audit** now also greps for private IPs of your servers, domains, `PrivateKey =`, `HeaderProtectionKey`, `BEGIN … PRIVATE KEY`,
+  `Bearer ` tokens, and 36-char UUIDs (see the checklist above).
+* Rotate after an agent session: panel password, API token, agent SSH key, anything typed in commands (session logs keep them).

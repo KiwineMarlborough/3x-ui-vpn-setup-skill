@@ -4,7 +4,7 @@ Thanks for improving this open-source agent skill.
 
 ## Rules
 
-1. **Never** commit real passwords, API tokens, UUIDs, private keys, or user domains
+1. **Never** commit real passwords, API tokens, UUIDs, private keys (incl. AmneziaWG `.conf`), real IPs or user domains
 2. Keep examples generic (`example.com`, `vpn.example.com`)
 3. Do not patch 3X-UI binaries — document panel/API/SQLite workflows only
 4. Match [Agent Skills](https://agentskills.io/) format: `SKILL.md` + optional folders
@@ -12,7 +12,8 @@ Thanks for improving this open-source agent skill.
 ## Pull requests
 
 - One topic per PR (e.g. "add router section", "fix hysteria script")
-- Test scripts on Ubuntu 22.04/24.04 if you change `scripts/`
+- Test scripts on Ubuntu 22.04/24.04/26.04 if you change `scripts/` (26.04 uses sudo-rs: no `sudo -E`; pass variables with `sudo env VAR=… bash`)
+- Prefer read-only / dry-run / staging modes for anything that changes a server, and say honestly what you did **not** verify live
 - Update `SKILL.md` reference table when adding docs
 - Update `CHANGELOG.md` for user-visible changes
 

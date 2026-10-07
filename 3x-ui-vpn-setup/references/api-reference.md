@@ -1,156 +1,113 @@
-# 3X-UI API Reference
+# 3X-UI API Reference (verified against 3X-UI 3.9.0)
 
-Patterns for agents automating panel operations. All examples use placeholders — load real values from `.env.local`.
+All examples use placeholders — load real values from `.env.local`. **The panel documents itself:**
+`GET $BASE/panel/api/openapi.json` (with the Bearer token) lists every route and method for *your* version —
+check it first when something returns 404.
 
-## Base URL
-
-```
-BASE="https://panel.<domain>:<port>/<webBasePath>"
-TOKEN="<api-token-from-panel>"
-```
-
-When `webDomain` is set, curl from the **server** needs SNI resolve:
+## Base URL and access
 
 ```bash
-R='--resolve panel.<domain>:29800:127.0.0.1'
+BASE="https://panel.<domain>:<port>/<webBasePath>"     # no trailing slash
+TOKEN="<api-token>"                                    # Settings -> API tokens
+R="--resolve panel.<domain>:<port>:127.0.0.1"          # calling from the server itself
+curl -sk $R -H "Authorization: Bearer $TOKEN" "$BASE/panel/api/inbounds/list"
 ```
 
-## Authentication
+* `webDomain` is enforced: requests with another `Host` get **403**. From the server use `--resolve` (as above);
+  from the admin PC through the tunnel use the hosts-file entry (`panel-tunnel-access.md`).
+* Since 3.7 tokens can be scoped/expiring; an expired token returns 401-style `success:false`.
+* **Reads are `GET`, writes are `POST`.** `PUT` does not exist (404). A wrong method also answers **404**, not 405.
+  (`GET inbounds/get/{id}`, `GET hosts/get/{groupId}`; `POST inbounds/update/{id}`, `POST hosts/update/{groupId}`.)
+  Responses: `{"success":bool,"msg":"…","obj":…}`.
 
-1. Panel → Settings → Create API token
-2. Every request: `Authorization: Bearer $TOKEN`
-3. Content-Type: `application/json` for POST bodies
-
-Login API exists but prefer long-lived token for automation.
-
-## Core endpoints
+## Endpoints used by this skill (3.9.0)
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| POST | `/panel/api/setting/all` | Read all panel settings (`obj`) |
-| POST | `/panel/api/setting/update` | Write settings (full `obj`, no `has*` keys) |
-| GET | `/panel/api/inbounds/list` | List inbounds |
-| POST | `/panel/api/inbound/add` | Create inbound |
-| POST | `/panel/api/inbound/update/<id>` | Update inbound |
-| POST | `/panel/api/inbound/del/<id>` | Delete inbound |
-| POST | `/panel/api/inbound/on/<id>` | Enable inbound |
-| POST | `/panel/api/inbound/off/<id>` | Disable inbound |
-| GET | `/panel/api/inbound/get/<id>` | Get one inbound |
-| POST | `/panel/api/inbound/addClient` | Add client to inbound |
-| POST | `/panel/api/inbound/updateClient/<clientId>` | Update client |
-| POST | `/panel/api/inbound/<id>/delClient/<clientId>` | Remove client |
-| POST | `/panel/api/server/status` | Xray status |
-| POST | `/panel/api/server/restartXrayService` | Restart Xray |
+| GET | `/panel/api/inbounds/list` · `/list/slim` · `/get/{id}` | read inbounds |
+| POST | `/panel/api/inbounds/add` | create inbound (full payload) |
+| POST | `/panel/api/inbounds/update/{id}` | update inbound (**see behaviour change below**) |
+| POST | `/panel/api/inbounds/del/{id}` · `/bulkDel` | delete |
+| POST | `/panel/api/inbounds/setEnable/{id}` | enable/disable an inbound, form field `enable=true\|false` (replaces old `on/off`) |
+| POST | `/panel/api/clients/add` | create client **and attach to inbounds**: `{"client":{...},"inboundIds":[…]}` |
+| POST | `/panel/api/clients/update/{email}` · `/del/{email}` · `/{email}/attach` · `/{email}/detach` | client lifecycle |
+| GET | `/panel/api/clients/list` · `/get/{email}` · `/links/{email}` · `/subLinks/{subId}` | read clients / links |
+| GET/POST | `/panel/api/hosts/list` · `get/{groupId}` · `byInbound/{id}` · `update/{groupId}` · `add` · `del/{groupId}` | **per-host overrides of subscription links** (see gotcha) |
+| POST | `/panel/api/setting/all` · `/setting/update` | read / write panel settings (still POST) |
+| GET | `/panel/api/server/status` · `/server/getDb` · `/server/logs/{count}` | status / DB download / logs |
+| POST | `/panel/api/server/restartXrayService` · `/setting/restartPanel` | restarts |
+| POST | `/panel/api/server/amneziawglogs/{count}` | AmneziaWG interface events + peers (`amneziawg.md`) |
+| GET | `/panel/api/openapi.json` | the authoritative route list |
 
-Exact paths may vary slightly by 3X-UI version — if 404, check panel Network tab while clicking UI actions.
+Removed/renamed vs. older versions (do not use): `inbound/add`, `inbound/update/{id}`, `inbound/del/{id}`,
+`inbound/on|off/{id}`, `inbound/addClient`, `inbound/updateClient/{id}` (singular `inbound`, per-inbound client calls).
 
-## setting/update gotcha
+## Behaviour changes that bite
 
-**Always:**
+* **3.9.0: `inbounds/update` no longer changes the inbound's clients, their enable/expiry/quota/renewal fields, or the
+  inbound's own `enable` flag.** Use the `clients/*` endpoints and `inbounds/setEnable/{id}`. Scripts that edited clients
+  through an inbound update silently stop working.
+* **Sending an inbound update:** pass the *full* object read from `GET inbounds/get/{id}` with only your change applied;
+  the fields in practice: `id, remark, enable, expiryTime, trafficReset, trafficResetDay, listen, port, protocol, tag,
+  shareAddrStrategy, shareAddr, disableFlow, settings, streamSettings, sniffing`. Read-only stat fields
+  (`up/down/total/clientStats`) are ignored. `settings`/`streamSettings` may be nested objects (preferred) or JSON strings.
+  An update **resets the inbound's traffic counters** (observed) and **may restart Xray**.
+* Changing an inbound's `streamSettings.security` does **not** update the `hosts` row for that inbound; the subscription
+  keeps emitting the old `security=`/`sni=` → update `hosts` too (`gotchas.md`).
+* **Settings written directly to SQLite (`UPDATE settings …`) are not seen until `x-ui` restarts** — the panel caches them
+  (observed for `subRoutingRules`). Prefer `setting/update`; after a DB edit run `systemctl restart x-ui` and verify
+  the subscription response.
+* 3.8.5+: saving/enabling an inbound whose port collides is refused with the owner named (this protects Xray from a crash loop).
 
-1. `POST setting/all` → take entire `obj`
-2. Modify needed fields only
-3. Remove all keys starting with `has` (e.g. `hasSubEncrypt`)
-4. `POST setting/update` with **complete** object
+## setting/update gotcha (unchanged)
 
-**Never** send partial JSON like `{"subEncrypt": false}` alone — panel may reject or wipe fields.
+1. `POST setting/all` → take the entire `obj`
+2. Modify only what you need
+3. Remove every key starting with `has` (e.g. `hasSubEncrypt`)
+4. `POST setting/update` with the **complete** object — a partial object can be rejected or wipe fields
 
 ```python
-obj = curl_json("POST", "/panel/api/setting/all", {})["obj"]
-for k in list(obj.keys()):
-    if k.startswith("has"):
-        obj.pop(k, None)
+obj = call("POST", "/panel/api/setting/all", {})["obj"]
+for k in [k for k in obj if k.startswith("has")]: obj.pop(k)
 obj["subEncrypt"] = False
-curl_json("POST", "/panel/api/setting/update", obj)
+call("POST", "/panel/api/setting/update", obj)
 ```
+See `scripts/apply-routing.py`, `scripts/set-sub-paths.py`. Settings are also available read-only via SQLite
+(`SELECT key,value FROM settings`).
 
-See `scripts/apply-routing.py` and `scripts/set-sub-paths.py`.
-
-## Example: read settings
+## Examples
 
 ```bash
-curl -sk $R \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -X POST "$BASE/panel/api/setting/all" \
-  -d '{}' | python3 -m json.tool
+# enable/disable an inbound (Hysteria isolation test). The panel UI sends a FORM field, not JSON:
+curl -sk $R -H "Authorization: Bearer $TOKEN" -X POST "$BASE/panel/api/inbounds/setEnable/5" -F enable=false
+curl -sk $R -H "Authorization: Bearer $TOKEN" -X POST "$BASE/panel/api/inbounds/setEnable/5" -F enable=true
+# (form encoding taken from the panel's own frontend code; not exercised live by the skill author — confirm with inbounds/get/5 .enable)
+# add a client to inbound 2 (secrets are generated server-side when omitted; email must be unique)
+curl -sk $R -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -X POST "$BASE/panel/api/clients/add" \
+  -d '{"client":{"email":"user-phone","enable":true,"totalGB":0,"expiryTime":0,"limitIp":0,"comment":"phone"},"inboundIds":[2,3,4]}'
+# read subscription-link overrides
+curl -sk $R -H "Authorization: Bearer $TOKEN" "$BASE/panel/api/hosts/byInbound/2"
 ```
-
-## Example: enable routing
-
-Use `scripts/apply-routing.py` or:
-
-```bash
-python3 scripts/apply-routing.py
-# env: PANEL_BASE, PANEL_TOKEN, ROUTING_TEMPLATE, PANEL_RESOLVE, ROUTING_NAME
-```
-
-## Example: list inbounds
-
-```bash
-curl -sk $R \
-  -H "Authorization: Bearer $TOKEN" \
-  -X GET "$BASE/panel/api/inbounds/list" | python3 -m json.tool
-```
-
-## Example: toggle inbound (Hysteria isolation test)
-
-```bash
-# Disable Hysteria inbound id=5
-curl -sk $R -H "Authorization: Bearer $TOKEN" \
-  -X POST "$BASE/panel/api/inbound/off/5" -d '{}'
-
-# Re-enable
-curl -sk $R -H "Authorization: Bearer $TOKEN" \
-  -X POST "$BASE/panel/api/inbound/on/5" -d '{}'
-```
-
-Then `sudo x-ui restart` or `POST .../server/restartXrayService`.
-
-## Example: add client
-
-Payload shape depends on inbound protocol. Minimum VLESS client:
-
-```json
-{
-  "id": 3,
-  "settings": "{\"clients\":[{\"id\":\"<uuid>\",\"email\":\"user-phone@project\",\"enable\":true,\"expiryTime\":0,\"totalGB\":0,\"limitIp\":0,\"flow\":\"xtls-rprx-vision\"}]}"
-}
-```
-
-Prefer panel UI for first client, then clone pattern via API. Podkop inbound: `flow` must be `""`.
-
 ## Error responses
 
 | Response | Meaning |
 |----------|---------|
-| `success: false`, 401 | Bad/expired token |
-| 403 HTML | Wrong host (IP vs `webDomain`) |
-| TLS handshake error | Cert/domain mismatch |
-| Empty `obj` | Token ok but path wrong (`webBasePath`) |
+| 404, empty body | wrong **method** or path (GET vs POST!), or wrong `webBasePath` |
+| 403 HTML | wrong `Host` (IP / localhost instead of `webDomain`) |
+| `success:false` | validation (message names the field/port owner) |
+| TLS handshake error | panel cert vs `webDomain` mismatch / expired |
 
-## When API is blocked
+## When the API is unavailable
 
-Fallback to SQLite on server (backup first):
+Fallback to SQLite (back up first, restart `x-ui` afterwards): `sudo cp /etc/x-ui/x-ui.db /root/backups/x-ui-$(date +%F).db`.
+Inbound JSON edits in the DB work but prefer the API + the repair scripts.
 
-```bash
-sudo cp /etc/x-ui/x-ui.db /root/backups/x-ui-$(date +%F).db
-sudo sqlite3 /etc/x-ui/x-ui.db "SELECT key,value FROM settings LIMIT 5;"
-```
-
-Inbound edits in DB are possible but prefer API + `scripts/fix-hysteria-stream.py` for stream JSON.
-
-## Subscription (no API token)
-
-Public endpoints on port 2096:
+## Subscription (no token)
 
 ```bash
-curl -skI "https://cdn.<domain>:2096/<subPath>/<sub_id>"
-curl -skI "https://cdn.<domain>:2096/<subJsonPath>/<sub_id>"
+curl -skI "https://cdn.<domain>:2096/<subPath>/<sub_id>" ; curl -skI "https://cdn.<domain>:2096/<subJsonPath>/<sub_id>"
 ```
 
 ## Related
 
-- `references/panel-settings.md` — field dictionary
-- `references/repair-only.md` — symptom → action
-- `scripts/audit-server.sh` — read-only health without changes
+`panel-settings.md` · `panel-tunnel-access.md` · `gotchas.md` · `repair-only.md` · `scripts/audit-server.sh`

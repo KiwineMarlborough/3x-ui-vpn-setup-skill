@@ -35,7 +35,7 @@ Each user gets own UUID and `sub_id` → separate subscription URL.
 
 ```bash
 # Panel: disable client or delete
-# Or API: inbound/delClient
+# Or API (3.9): POST /panel/api/clients/del/<email>  (detach from one inbound: POST /panel/api/clients/<email>/detach)
 ```
 
 Router stops immediately; phone user unaffected.

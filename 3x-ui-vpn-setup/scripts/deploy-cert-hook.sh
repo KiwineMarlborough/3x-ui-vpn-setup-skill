@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Install LE renewal hook to sync certs to nginx ssl dir.
+# Install a CERTBOT deploy hook that syncs certs to the nginx ssl dir.
+#
+# LEGACY / certbot-only. 3X-UI normally issues certificates with acme.sh (not certbot), in which case this
+# hook never runs. For acme.sh use scripts/deploy-acme-renewal.sh (webroot mode + its own deploy hook).
+#
 #
 # Usage (on server, as root):
 #   export CDN_DOMAIN=cdn.vpn.example.com
 #   export CERT_SRC=/root/cert/cdn.vpn.example.com
-#   sudo -E bash deploy-cert-hook.sh
+#   sudo env "CDN_DOMAIN=$CDN_DOMAIN" "CERT_SRC=${CERT_SRC:-}" bash deploy-cert-hook.sh
 
 set -euo pipefail
 

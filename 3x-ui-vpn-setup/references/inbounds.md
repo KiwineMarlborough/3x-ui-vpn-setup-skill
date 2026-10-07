@@ -130,3 +130,38 @@ sudo sqlite3 /etc/x-ui/x-ui.db \
 # Reality flow on client_inbounds (if stored per-inbound in settings JSON)
 # Prefer panel API; inspect: SELECT settings FROM inbounds WHERE port=8443;
 ```
+---
+
+## Added in 1.3 — read before creating or changing inbounds
+
+**1. Sync the `hosts` row after every change.** Subscription links take `security`/`sni`/address/port/path/fingerprint from the
+per-host override table, not from the inbound (`gotchas.md`). After creating or editing an inbound:
+
+```bash
+sudo sqlite3 /etc/x-ui/x-ui.db "SELECT id,inbound_id,address,port,security,sni,path FROM hosts ORDER BY inbound_id;"
+# fix through the API: GET /panel/api/hosts/get/<groupId>, edit, POST /panel/api/hosts/update/<groupId>
+```
+`audit-server.sh` flags rows that disagree with the inbound.
+
+**2. Check the *effective* flow, not the one you remember.** Per-inbound flow overrides live in `client_inbounds.flow_override`
+and the client's own `flow` field. In the originating install the "TCP/Podkop" inbound turned out to carry
+`xtls-rprx-vision` although the notes said it was empty (cause unknown — possibly a panel migration):
+```bash
+sudo sqlite3 /etc/x-ui/x-ui.db "SELECT ci.inbound_id, c.email, ci.flow_override FROM client_inbounds ci JOIN clients c ON c.id=ci.client_id;"
+```
+If a router client (Podkop/Forkop/Passwall) needs an empty flow, set it and re-test that client — don't assume.
+
+**3. Reality ports: one borrowed SNI per port.** Do not reuse the same `dest`/SNI/keys on several ports; they would correlate.
+Validate every SNI (`reality-sni.md`: TLS 1.3, reachable from the VPS, large CDN-fronted site).
+
+**4. TLS inbounds (TCP 8444, XHTTP 2053) present the CDN certificate on non-standard ports** — a recognisable pattern
+(`rkn-and-blocking.md`). TCP can be converted to Reality (works, verified). **XHTTP + Reality failed on Xray 26.7.28** — keep XHTTP on TLS
+unless a loopback test passes on your core version (`testing-methods.md`). Both TLS inbounds die when the certificate expires.
+
+**5. Always run `scripts/loopback-test.py` after creating/changing an inbound** — it proves the profile with a real handshake before
+a client ever sees it.
+
+**6. Optional 5th profile: AmneziaWG 3.1** (UDP, `amneziawg.md`). It never appears in the subscription (so it does not change the
+"3× vless + 1× hysteria2" count that `verify-server.sh` expects).
+
+**7. `inbounds/update` (3.9)** no longer changes clients or the inbound's enable flag (`api-reference.md`).

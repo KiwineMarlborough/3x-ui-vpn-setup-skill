@@ -7,7 +7,7 @@ Move 3X-UI setup without rebuilding from scratch — or partial migration.
 | Asset | Path | Notes |
 |-------|------|-------|
 | Database | `/etc/x-ui/x-ui.db` | All inbounds, clients, settings |
-| LE certs | `/root/cert/<domain>/` | Re-issue if domain stays, new IP |
+| LE certs | `/root/cert/<domain>/` | Re-issue on the new server with `deploy-acme-renewal.sh` (the acme.sh state/renewal mode is NOT in this folder) |
 | nginx site | `/etc/nginx/sites-available/cdn-fallback` | Redeploy from skill templates |
 | SSH keys | `~/.ssh/authorized_keys` | Add new key before cutover |
 
@@ -34,8 +34,10 @@ sudo tar czf /tmp/x-ui-migrate.tar.gz /etc/x-ui/x-ui.db /root/cert/
 2. Stop x-ui, restore db and certs
 3. Update DNS A records → new IP
 4. Fix panel cert paths if domains unchanged
-5. `sudo x-ui start`
-6. `xray -test` + `verify-server.sh`
+5. Install nginx + `deploy-acme-renewal.sh` (STAGING_TEST, then APPLY) — a restored certificate whose acme.sh state is missing will never renew
+6. Re-run `deploy-ipsum.sh` / `setup-fail2ban.sh` with your `ADMIN_IPS` (not part of the DB)
+7. `sudo x-ui start`
+8. `xray -test` + `loopback-test.py` + `verify-server.sh`
 
 ## Partial migration (rebuild inbounds)
 
@@ -50,10 +52,10 @@ If DB corrupt or version mismatch:
 
 ```
 1. New VPS ready, verify with /etc/hosts or --resolve tests
-2. Change panel + cdn A records
+2. Change the cdn A record (there is no public panel record)
 3. Wait TTL
-4. LE renew or re-request if HTTP-01 failed during overlap
-5. deploy-cert-hook.sh on new server
+4. Re-issue the certificate on the new server (HTTP-01 through nginx :80: `deploy-acme-renewal.sh`)
+5. Check `check-cert-expiry.sh` + `verify-server.sh`; update the UFW/IPsum whitelist for your admin IPs
 ```
 
 ## What breaks if forgotten
@@ -62,7 +64,7 @@ If DB corrupt or version mismatch:
 |-------------|---------|
 | Hysteria stream not fixed | JSON 500 after restore |
 | Old sub paths in Happ | 404 until refresh URL |
-| nginx cert not synced | 443 TLS error on cdn |
+| nginx cert not synced / renewal still standalone | 443 TLS error on cdn now, or expiry in ~90 days |
 | UFW not opened | Timeouts |
 | webDomain old cert | Panel TLS error |
 

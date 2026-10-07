@@ -12,6 +12,20 @@ Use when a 3X-UI server **already exists** and something broke. Do **not** rerun
 ## Decision tree
 
 ```
+Reality works, but TCP-TLS / XHTTP / Hysteria2 / subscription / CDN page all fail
+└─ EXPIRED CERTIFICATE (most likely) -> sudo bash scripts/check-cert-expiry.sh
+   ├─ expired / <7d -> cert-renewal-nginx.md: deploy-acme-renewal.sh (STAGING_TEST=1, then APPLY=1)
+   └─ also check why renewal failed: acme.sh Le_Webroot='no' (standalone) + nginx on :80, or a removed DNS name inside the cert
+
+Client shows n/a / won't connect, server looks fine
+└─ testing-methods.md: loopback-test.py (HTTP 200?) -> another client -> another network. Do NOT revert server changes first.
+
+User lost access from ONE network only (others fine)
+└─ IPsum false positive (CGNAT range) -> nft get element inet ipsum blocklist '{ ip }' -> whitelist (blocklist-ipsum-fail2ban.md)
+
+Locked out after enabling IPsum/Fail2Ban
+└─ wait for the 5-min auto-rollback, or provider console: nft delete table inet ipsum ; fail2ban-client unban <ip>
+
 ALL profiles dead / x-ui inactive
 ├─ xray -test FAIL
 │  ├─ log: version != 2 → fix-hysteria-stream.py (gotchas.md)
@@ -36,9 +50,20 @@ One profile fails (others OK)
 └─ Hysteria → UDP 36712 blocked on network; or stream version
 
 Panel won't open
-├─ 403 by IP → expected; use panel.<domain>
-├─ TLS error → webCertFile vs webDomain (panel-security.md)
-└─ timeout → UFW / webListen 127.0.0.1 without SSH tunnel
+├─ 403 by IP / localhost → expected (webDomain lock); use the panel hostname + hosts entry + SSH tunnel (panel-tunnel-access.md)
+├─ hostname resolves to 198.18.x.x → hosts entry missing / VPN client fake-DNS answered
+├─ browser refuses the self-signed cert → another browser, `thisisunsafe`, or trust the cert
+├─ TLS error → webCertFile vs webDomain (panel-security.md); expired panel cert (check-cert-expiry.sh)
+└─ timeout → closed port is CORRECT without the tunnel; with the tunnel check it is up and the forward is local-port -> 127.0.0.1:<port>
+
+Subscription links show security=tls/sni=<domain> after an inbound was switched to Reality (or any wrong link field)
+└─ stale `hosts` row -> inbounds.md / gotchas.md (GET/POST /panel/api/hosts/*)
+
+Subscription/routing shows an old value after a direct SQLite edit
+└─ systemctl restart x-ui (the panel caches settings)
+
+Profile "works" in the list but nothing loads (AmneziaWG)
+└─ amneziawg.md troubleshooting: UFW udp port, peer endpoint in amneziawglogs, MTU, return to minimal profile
 
 Routing not applied in Happ
 ├─ subEnableRouting false → apply-routing.py
@@ -59,7 +84,12 @@ After panel update
 | `set-sub-paths.py` | Medium | Sub 404; `--sqlite-only` if API unreachable |
 | `apply-routing.py` | Medium | Routing headers missing |
 | `fix-hysteria-stream.py` | Medium | JSON 500 / Xray won't start |
-| `deploy-cert-hook.sh` | Low | nginx TLS stale after LE renew |
+| `check-cert-expiry.sh` | None (read-only) | Any TLS problem — first check |
+| `loopback-test.py` | None (temp local client) | Prove an inbound with a real handshake |
+| `deploy-acme-renewal.sh` | Low–Medium (`STAGING_TEST=1` is safe; `APPLY=1` reissues) | Expired / non-renewing certificate |
+| `deploy-ipsum.sh` / `setup-fail2ban.sh` | Medium (auto-rollback / ignoreip safeguards) | Hardening missing |
+| `awg-tool.py` | Medium | Optional AmneziaWG create / rotate / render |
+| `deploy-cert-hook.sh` | Low | legacy **certbot**-only sync hook |
 
 **Always backup** before DB-touching scripts:
 
@@ -84,6 +114,9 @@ sudo sqlite3 /etc/x-ui/x-ui.db \
 ## Quick commands
 
 ```bash
+sudo bash scripts/audit-server.sh        # read-only picture first
+sudo bash scripts/check-cert-expiry.sh
+sudo python3 scripts/loopback-test.py
 sudo x-ui status
 sudo tail -30 /var/log/x-ui/3xui.log
 sudo /usr/local/x-ui/bin/xray-linux-amd64 run -test -c /usr/local/x-ui/bin/config.json

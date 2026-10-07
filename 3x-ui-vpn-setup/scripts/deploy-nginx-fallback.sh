@@ -4,7 +4,7 @@
 # Usage (on server, as root):
 #   export CDN_DOMAIN=cdn.vpn.example.com
 #   export CERT_SRC=/root/cert/cdn.vpn.example.com   # 3X-UI LE path
-#   sudo -E bash deploy-nginx-fallback.sh
+#   sudo env "CDN_DOMAIN=$CDN_DOMAIN" "CERT_SRC=${CERT_SRC:-}" bash deploy-nginx-fallback.sh
 #
 # Optional: SKILL_ROOT=/path/to/3x-ui-vpn-setup (defaults to script parent dir)
 

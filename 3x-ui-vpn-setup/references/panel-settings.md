@@ -15,6 +15,8 @@ Single source of truth for 3X-UI settings keys used by this skill. Values live i
 
 **403 by IP is correct** when `webDomain` is set. Access via `https://panel.<domain>:<port>/<webBasePath>/`.
 
+`webDomain` does **not** have to exist in public DNS: with `PANEL_ACCESS=tunnel` (default) the name resolves only on the admin PC through a hosts entry and an SSH tunnel (`panel-tunnel-access.md`), and `webCertFile`/`webKeyFile` point to a self-signed certificate (`cert-renewal-nginx.md`). Settings changed directly in SQLite are served stale until `x-ui` restarts (`gotchas.md`).
+
 ## Subscription
 
 | Key | Purpose | Production value |
@@ -22,9 +24,9 @@ Single source of truth for 3X-UI settings keys used by this skill. Values live i
 | `subEnable` | Subscription service on | `true` |
 | `subPort` | Subscription listener | `2096` |
 | `subPath` | Custom plain sub path prefix | `/xK9mP2qR/` (random, trailing `/`) |
-| `subJsonPath` | Custom JSON sub path prefix | `/j4nR8wLz3k/` |
+| `subJsonPath` | Custom JSON sub path prefix | `/zP4mQ8vN2c/` |
 | `subURI` | Full plain sub base URL | `https://cdn.<domain>:2096<xK9mP2qR/>` |
-| `subJsonURI` | Full JSON sub base URL | `https://cdn.<domain>:2096<j4nR8wLz3k/>` |
+| `subJsonURI` | Full JSON sub base URL | `https://cdn.<domain>:2096<zP4mQ8vN2c/>` |
 | `subJsonEnable` | JSON subscription endpoint | `true` |
 | `subEncrypt` | Base64-encrypt sub body | **`false`** (plain links) |
 | `subUpdates` | Show update notices in sub | optional |
@@ -73,9 +75,9 @@ sudo sqlite3 /etc/x-ui/x-ui.db \
 sudo cp /etc/x-ui/x-ui.db /etc/x-ui/x-ui.db.bak
 sudo sqlite3 /etc/x-ui/x-ui.db <<'SQL'
 UPDATE settings SET value='/xK9mP2qR/' WHERE key='subPath';
-UPDATE settings SET value='/j4nR8wLz3k/' WHERE key='subJsonPath';
+UPDATE settings SET value='/zP4mQ8vN2c/' WHERE key='subJsonPath';
 UPDATE settings SET value='https://cdn.vpn.example.com:2096/xK9mP2qR/' WHERE key='subURI';
-UPDATE settings SET value='https://cdn.vpn.example.com:2096/j4nR8wLz3k/' WHERE key='subJsonURI';
+UPDATE settings SET value='https://cdn.vpn.example.com:2096/zP4mQ8vN2c/' WHERE key='subJsonURI';
 UPDATE settings SET value='false' WHERE key='subEncrypt';
 SQL
 sudo x-ui restart

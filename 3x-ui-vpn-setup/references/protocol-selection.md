@@ -10,12 +10,14 @@ Which inbound to use when — for agents advising users and for multi-user inbou
 | **TCP-Podkop** | 8444 | Routers, OpenWrt, clients without XHTTP/Hysteria |
 | **XHTTP-Mobile** | 2053 | Mobile carrier DPI blocks Reality/TCP |
 | **Hysteria2** | 36712/udp | Fast UDP path; when TCP throttled and UDP allowed |
+| **AmneziaWG 3.1** (optional) | own UDP port | OpenWrt routers and phones using the Amnezia apps; a WireGuard-style tunnel with obfuscation — **not importable into Happ** (`amneziawg.md`) |
 
 ## By client app
 
 | App | Recommended | Avoid |
 |-----|-------------|-------|
-| Happ Plus (iOS) | Reality → XHTTP → Hysteria | — |
+| Happ Plus (iOS) | Reality → XHTTP → Hysteria | AmneziaWG (not supported) |
+| AmneziaVPN / AmneziaWG apps | AmneziaWG `.conf`/QR | everything else |
 | v2rayNG / Streisand | Reality (flow=vision) | Old builds + XHTTP |
 | Hiddify / Nekoray | JSON sub, any profile | — |
 | OpenWrt / Passwall | TCP 8444, Reality 8443 | XHTTP, Hysteria on old cores |
@@ -60,3 +62,9 @@ Reality mimics TLS to borrowed SNI — preferred in restrictive regions.
 - `references/inbounds.md` — field recipes
 - `references/clients.md` — per-app notes
 - `references/rkn-and-blocking.md` — blocking context
+## Honest limits (what the choice cannot fix)
+
+* All profiles share one **datacenter IP**; classifiers score that regardless of protocol.
+* TLS-based profiles (TCP, XHTTP) show the real CDN certificate on non-standard ports; Reality ports show the borrowed site's.
+* A profile that "doesn't work" in a client may be a client quirk or an expired certificate — prove the server side first
+  (`testing-methods.md`) before switching protocols.

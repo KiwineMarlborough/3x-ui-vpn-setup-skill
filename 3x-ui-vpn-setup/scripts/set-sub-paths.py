@@ -6,7 +6,7 @@ Usage:
   export PANEL_TOKEN="..."
   export CDN_DOMAIN="cdn.example.com"
   export SUB_PATH="/xK9mP2qR/"
-  export JSON_PATH="/j4nR8wLz3k/"
+  export JSON_PATH="/zP4mQ8vN2c/"
   export SUB_PORT=2096
   export PANEL_RESOLVE="panel.example.com:29800:127.0.0.1"  # optional
   python3 set-sub-paths.py

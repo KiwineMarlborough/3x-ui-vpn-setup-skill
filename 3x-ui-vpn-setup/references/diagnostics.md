@@ -5,7 +5,7 @@
 ```bash
 export CDN_DOMAIN=cdn.vpn.example.com
 export SUB_PATH=/xK9mP2qR/
-export JSON_PATH=/j4nR8wLz3k/
+export JSON_PATH=/zP4mQ8vN2c/
 export SUB_ID=<full-uuid>
 sudo bash scripts/verify-server.sh
 ```

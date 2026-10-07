@@ -47,8 +47,8 @@ Minimum prompt:
 
 ```text
 Use the 3x-ui-vpn-setup skill. SSH: user@IP, key at ~/.ssh/id_ed25519.
-Domains: panel.vpn.example.com, cdn.vpn.example.com.
-Set up Reality + XHTTP + Hysteria2 + Happ routing in subscription.
+CDN domain: cdn.vpn.example.com (no public panel record — panel via SSH tunnel). ADMIN_IPS: <your public IP>.
+Set up Reality + XHTTP + Hysteria2 + Happ routing in subscription, IPsum + Fail2Ban, self-renewing certificate; verify with loopback-test.py.
 ```
 
 Agent must have **shell/SSH tools** enabled.
