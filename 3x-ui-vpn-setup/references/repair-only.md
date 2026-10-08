@@ -23,6 +23,9 @@ Client shows n/a / won't connect, server looks fine
 User lost access from ONE network only (others fine)
 └─ IPsum false positive (CGNAT range) -> nft get element inet ipsum blocklist '{ ip }' -> whitelist (blocklist-ipsum-fail2ban.md)
 
+Telegram/panel alert "CPU high" but nothing seems wrong
+└─ monitoring.md procedure: did we run something? -> panel history API -> atop replay -> attack indicators -> steal. A single blip is normal on 1 vCPU
+
 Locked out after enabling IPsum/Fail2Ban
 └─ wait for the 5-min auto-rollback, or provider console: nft delete table inet ipsum ; fail2ban-client unban <ip>
 
@@ -88,6 +91,7 @@ After panel update
 | `loopback-test.py` | None (temp local client) | Prove an inbound with a real handshake |
 | `deploy-acme-renewal.sh` | Low–Medium (`STAGING_TEST=1` is safe; `APPLY=1` reissues) | Expired / non-renewing certificate |
 | `deploy-ipsum.sh` / `setup-fail2ban.sh` | Medium (auto-rollback / ignoreip safeguards) | Hardening missing |
+| `setup-atop.sh` | Low (installs a package, `DRY_RUN=1` previews) | No history to explain a CPU alert |
 | `awg-tool.py` | Medium | Optional AmneziaWG create / rotate / render |
 | `deploy-cert-hook.sh` | Low | legacy **certbot**-only sync hook |
 

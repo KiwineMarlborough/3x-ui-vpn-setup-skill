@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.1] — 2026-10-08
+
+### Added
+- `scripts/setup-atop.sh`: installs `atop` and records per-process CPU/memory/disk/network history (60 s interval, 28 days, idempotent, `DRY_RUN=1`),
+  so a panel/Telegram "CPU 87%" alert can be explained after the fact. Verified on a live server (dry-run, input validation, idempotent real run, `atopsar`
+  replay); atop itself was installed and run there.
+- `references/monitoring.md`: "CPU alerts: explain them after the fact" — what atop is, replay commands, and the investigation procedure that worked
+  (own sudo log → panel history API `/panel/api/server/history/cpu/{bucket}` → atop → attack indicators → hypervisor steal → single blip is normal on 1 vCPU).
+- `verify-server.sh` warns when atop is not recording; `execution-order.md` phase 1c; `repair-only.md` "CPU high" branch.
+
 ## [1.3.0] — 2026-10-08
 
 Lessons from operating a real server for months. The scripts below were exercised against a live 3X-UI 3.9.0 / Xray 26.9.30 / Ubuntu 26.04 server (see "Known limits" for the paths that were only

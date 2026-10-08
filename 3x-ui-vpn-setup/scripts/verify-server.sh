@@ -110,6 +110,12 @@ else
   warn "fail2ban not active (scripts/setup-fail2ban.sh)"
 fi
 
+if systemctl is-active atop >/dev/null 2>&1; then
+  ok "atop recording (history for explaining CPU alerts)"
+else
+  warn "atop not running — a CPU alert could not be explained afterwards (scripts/setup-atop.sh)"
+fi
+
 if [[ "$PANEL_ACCESS" == "tunnel" ]]; then
   if ufw status 2>/dev/null | grep -E "^${PANEL_PORT}/tcp" | grep -q ALLOW; then
     warn "panel port ${PANEL_PORT} is ALLOWED in UFW but PANEL_ACCESS=tunnel — close it (references/panel-tunnel-access.md)"

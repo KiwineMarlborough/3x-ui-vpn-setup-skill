@@ -13,7 +13,7 @@ compatibility: claude-code, codex, qwen-code, opencode, grok-build, antigravity
 metadata:
   author: KiwineMarlborough
   standard: agentskills.io
-  version: "1.3.0"
+  version: "1.3.1"
 ---
 
 # 3X-UI Personal VPN — Setup, Hardening, Repair
@@ -90,6 +90,7 @@ nginx on **443**; **no** VLESS on 443. CDN page: `assets/cdn-fallback/index.html
 | 0 | Intake + `.env.local` | this file |
 | 1 | apt, UFW | `optimization.md`, `backup-update.md` |
 | 1b | **Fail2Ban + IPsum** | `setup-fail2ban.sh`, `deploy-ipsum.sh`, `blocklist-ipsum-fail2ban.md` |
+| 1c | **atop** (process/CPU history) | `setup-atop.sh`, `monitoring.md` |
 | 2 | Install 3X-UI | `install-fallback.md` if blocked |
 | 3 | Panel harden, panel port closed | `panel-security.md`, `panel-tunnel-access.md` |
 | 4 | DNS (CDN record only) | `dns-setup.md` |
@@ -114,6 +115,7 @@ nginx on **443**; **no** VLESS on 443. CDN page: `assets/cdn-fallback/index.html
 | `scripts/deploy-acme-renewal.sh` | acme.sh webroot renewal + deploy hook (`STAGING_TEST=1` safe) | low–medium |
 | `scripts/deploy-ipsum.sh` (+ `ipsum-update.sh`) | IPsum nftables blocklist with whitelist + auto-rollback | medium |
 | `scripts/setup-fail2ban.sh` | sshd jail with admin `ignoreip` | low |
+| `scripts/setup-atop.sh` | atop: per-process history (60 s, 28 days) to explain CPU alerts afterwards | low |
 | `scripts/awg-tool.py` | AmneziaWG create / rotate / render `.conf` | medium |
 | `scripts/deploy-nginx-fallback.sh` | nginx CDN vhost + landing (symlinked) | low |
 | `scripts/set-sub-paths.py` | Custom sub paths + subEncrypt=false | medium |
@@ -155,7 +157,7 @@ Full reference and the 3.9 behaviour changes: `references/api-reference.md`.
 - Certificates (files **and** served) > 30 days; renewal mode webroot; `check-cert-expiry.sh` clean
 - Sub + JSON → HTTP 200; ≥3 `vless://` + ≥1 `hysteria2://`; `Routing-Enable: true` if routing enabled
 - Ports 8443, 8444, 2053, 2096, 36712/udp (+ AWG udp port if installed)
-- IPsum table loaded, rollback timer **not** armed; fail2ban sshd jail active
+- IPsum table loaded, rollback timer **not** armed; fail2ban sshd jail active; atop recording
 - Panel port not open in UFW (tunnel mode); `hosts` consistent with inbounds
 - Only the intended accounts/keys/sudo rules exist (`audit-server.sh`)
 
@@ -185,7 +187,7 @@ backup locations, certificate renewal date, whitelisted IPs, what is verified vs
 | `references/inbounds.md` | Inbound recipes + 1.3 warnings |
 | `references/panel-settings.md` | Settings keys |
 | `references/secrets-management.md` | No leaks |
-| `references/monitoring.md` | Health checks, cron, backups |
+| `references/monitoring.md` | Health checks, cron, backups, **CPU alert procedure (atop)** |
 | `references/backup-update.md` | Backups, panel/system updates, rollback |
 | `references/compatibility.md` | Verified version matrix |
 | `references/dns-setup.md` | DNS / Cloudflare (what breaks with the orange cloud) |

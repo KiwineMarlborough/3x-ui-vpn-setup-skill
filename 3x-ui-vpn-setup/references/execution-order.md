@@ -8,6 +8,7 @@ Wrong order causes Xray crash, JSON 500, nginx port conflict, a lock-out, or a c
 0.  Intake (SSH, domains, SNI, ADMIN IPs, panel access mode, agent-account policy, optional AWG)
 1.  Baseline: apt update/upgrade, UFW basics (deny incoming; allow SSH first!)
 1b. Hardening: Fail2Ban (setup-fail2ban.sh) and IPsum (deploy-ipsum.sh, rollback armed -> confirm)   <- needs ADMIN_IPS
+1c. Observability: atop (setup-atop.sh) — CPU/process history so a later CPU alert can be explained
 2.  Install 3X-UI (x-ui menu / install.sh)
 3.  Panel harden: password, webBasePath, API token; panel port closed in UFW (tunnel-only)
 4.  DNS: ONE A record for the CDN name (grey cloud) -> wait propagation   — dns-setup.md (no panel record)

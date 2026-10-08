@@ -60,7 +60,7 @@ Honest scope: what was verified live vs. not is marked in each document (`compat
 ```
 3x-ui-vpn-setup/
 ├── SKILL.md
-├── scripts/             # 15 scripts: setup, hardening, certificates, testing, AWG
+├── scripts/             # 16 scripts: setup, hardening, certificates, testing, monitoring, AWG
 ├── templates/           # routing, hysteria, nginx
 ├── references/          # 34 guides
 └── assets/cdn-fallback/

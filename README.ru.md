@@ -76,7 +76,7 @@ Claude Code · OpenAI Codex · Qwen Code · OpenCode · **Grok Build** · Google
 ```
 3x-ui-vpn-setup/
 ├── SKILL.md              ← главный playbook для агента
-├── scripts/              ← 15 скриптов: установка, защита, сертификаты, тесты, AWG
+├── scripts/              ← 16 скриптов: установка, защита, сертификаты, тесты, мониторинг, AWG
 ├── templates/            ← routing, hysteria, nginx
 ├── references/           ← 34 справочника
 └── assets/cdn-fallback/  ← лендинг для :443
