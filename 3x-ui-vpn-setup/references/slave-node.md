@@ -1,5 +1,6 @@
 # Slave Node (optional second VPS)
 
+> **Lighter alternative / tooling:** `country-bridge.md` + `scripts/bridge/` add extra subscription lines on the *same* hub that exit through an own exit VDS or provider nodes (no second panel, fail-closed balancers, per-agent access). Use this page when you want a full second panel.
 Client-side Happ routing (`.ru` direct) ≠ server cascade. Slave gives **RU exit IP** for selected traffic.
 
 ## When to add

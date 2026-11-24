@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.0] — 2026-11-24
+
+Optional **country-bridge** module: extra subscription lines that exit through another country, used day-to-day for ~2 weeks on a real
+hub (3X-UI 3.11.0 / Xray 26.11.9). Everything in `scripts/bridge/` was run live; items not verified are listed in the reference.
+
+### Added
+- `references/country-bridge.md`: design (one inbound per exit + `hosts` row + routing rule), own exit VDS vs provider nodes, balancers with
+  fail-closed, country pools by subscription flag, per-agent access, how to prove it works, and what is NOT verified.
+- `scripts/bridge/`: `deploy_exit_node.sh` (separate Xray exit node, port limited to the hub IP, blocks private/loopback/own IP), `add_bridge_profile.py`,
+  `link_to_outbound.py` (vless / hysteria2 link → outbound), `test_outbound.py`, `sync_country_balancers.py` + `deploy_country_sync.sh` (hourly timer: nodes
+  chosen by **flag**, stable copies `ctry-<CC>-<n>`, live exit-country check, `--tolerate`, blackhole when empty), `set_profile_balancer.py`,
+  `failover_test.py`, `route_test.py`, `add_agent.py`, `sub_to_xray.py` (agent-side local proxy from a subscription), small API helpers.
+- Lessons recorded in the references: balancer `selector` is a **prefix** match; provider tags are not country names (providers reshuffle which
+  server carries which name); a balancer with no `fallbackTag` silently exits from the hub IP; failover timing (observatory 30 s → ~76 s);
+  WARP findings (`warp-optional.md`); BBR only affects new connections (`optimization.md`).
+- Hard rules 14–15 in `SKILL.md`; intake question 15; phase 23.
+
+### Known limits
+- 3-tier priority via a `loopback` outbound chain and entry nodes inside the censoring country are designs, not verified.
+- A Forkop (sing-box) router did not show latency for the bridge lines while desktop clients did; cause unknown — no compatibility claim.
+
 ## [1.3.1] — 2026-10-08
 
 ### Added

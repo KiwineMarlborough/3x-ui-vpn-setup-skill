@@ -1,4 +1,4 @@
-# 3x-ui-vpn-setup — Universal Agent Skill v1.3
+# 3x-ui-vpn-setup — Universal Agent Skill v1.4
 
 > **Tired of blocked VPN services?** Spin up **your own** server in an evening — no manual Xray configs.
 >
@@ -39,6 +39,12 @@ Copy [`.env.example`](.env.example) → `.env.local` (gitignored).
 Claude Code · OpenAI Codex · Qwen Code · OpenCode · Grok Build · Google Antigravity
 
 Details: [`references/agent-install.md`](3x-ui-vpn-setup/references/agent-install.md)
+
+## What's new in v1.4
+
+| Area | What changed |
+|------|--------------|
+| **Country bridge (optional)** | Extra subscription lines that exit through another country: your own exit VDS, provider nodes, balancers with **fail-closed**, country pools chosen by the subscription **flag** with a live exit-country check, per-agent access. See [`references/country-bridge.md`](3x-ui-vpn-setup/references/country-bridge.md) and [`scripts/bridge/`](3x-ui-vpn-setup/scripts/bridge/README.md). |
 
 ## What's new in v1.3 (lessons from running it in production)
 

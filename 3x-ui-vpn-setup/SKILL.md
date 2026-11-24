@@ -5,7 +5,8 @@ description: >
   (primary), XHTTP, TCP Podkop, Hysteria2, optional native AmneziaWG 3.1 inbound, Happ routing in the
   subscription (DoH), custom sub paths, nginx CDN fallback, UFW, panel reachable only through an SSH tunnel,
   self-renewing Let's Encrypt (acme.sh webroot) with expiry monitoring, IPsum blocklist (nftables) + Fail2Ban,
-  real-handshake testing. Use for new server setup, 3X-UI/Xray updates, fixes, expired certificates,
+  real-handshake testing, optional country-bridge exits (own exit VDS, provider nodes, balancers with fail-closed,
+  automatic country pools by subscription flag). Use for new server setup, 3X-UI/Xray updates, fixes, expired certificates,
   subscription 404/500, Hysteria version errors, client "n/a". Triggers: 3x-ui, xray, reality, hysteria2,
   amneziawg, happ routing, ipsum, /3x-ui-vpn-setup. Never patch binaries — panel, API, SQLite, UFW, nginx only.
 license: MIT
@@ -13,7 +14,7 @@ compatibility: claude-code, codex, qwen-code, opencode, grok-build, antigravity
 metadata:
   author: KiwineMarlborough
   standard: agentskills.io
-  version: "1.3.1"
+  version: "1.4.0"
 ---
 
 # 3X-UI Personal VPN — Setup, Hardening, Repair
@@ -49,6 +50,7 @@ End-to-end workflow for an AI agent with **SSH access to a Linux VPS** (verified
 | 12 | Second user for a router? | optional |
 | 13 | **AmneziaWG 3.1** (OpenWrt router / Amnezia apps)? port + clients | optional module |
 | 14 | RU Slave VPS later? | optional note only |
+| 15 | **Country-bridge lines** (extra subscription lines exiting via another country / own exit VDS / provider nodes)? | optional module |
 
 ## Hard rules
 
@@ -65,6 +67,8 @@ End-to-end workflow for an AI agent with **SSH access to a Linux VPS** (verified
 11. Back up before changes (DB **and** binaries); use `sudo env VAR=… bash` (Ubuntu 26.04 sudo-rs ignores `sudo -E`)
 12. Never `pkill -f <text>` inside an SSH command; kill by PID
 13. Revert only what you changed and proved wrong — test from another client/network before reverting server config
+14. **Country bridge:** balancers must be **fail-closed** (`fallbackTag: blocked`); never select provider nodes by tag name or a bare tag prefix; third-party nodes never carry other people's personal data (`references/country-bridge.md`)
+15. Edit handoff/plan documents only through a backup-and-size-guard helper — a one-line path typo once overwrote a whole handoff
 
 ## Architecture
 
@@ -103,6 +107,7 @@ nginx on **443**; **no** VLESS on 443. CDN page: `assets/cdn-fallback/index.html
 | 18 | Optional AmneziaWG | `awg-tool.py`, `amneziawg.md` |
 | 19–21 | UFW final, **loopback test**, verify | `loopback-test.py`, `verify-server.sh` |
 | 22 | Handoff + account cleanup | `post-setup-handoff.md`, `agent-access-hygiene.md` |
+| 23 | *(optional)* Country bridge: own exit VDS, provider nodes, balancers, per-agent access | `scripts/bridge/`, `country-bridge.md` |
 
 ## Scripts
 
@@ -123,6 +128,7 @@ nginx on **443**; **no** VLESS on 443. CDN page: `assets/cdn-fallback/index.html
 | `scripts/fix-hysteria-stream.py` | Repair Hysteria stream in DB | medium |
 | `scripts/fix-podkop-flow.py` | Empty flow for Podkop TCP | low |
 | `scripts/deploy-cert-hook.sh` | **legacy** certbot-only hook | low |
+| `scripts/bridge/*` | Country-bridge toolkit: exit node installer, bridge lines, country pools by flag (timer), failover test, agent client generator — see `scripts/bridge/README.md` | medium |
 
 Env vars: see `.env.example`. Ubuntu 26.04: pass variables with `sudo env "VAR=value" bash script.sh`.
 
@@ -168,7 +174,7 @@ backup locations, certificate renewal date, whitelisted IPs, what is verified vs
 
 ## Optional later
 
-`slave-node.md` · `warp-optional.md` · `migration.md` · `clients.md` · `protocol-selection.md` · `multi-user.md` · `amneziawg.md`
+`slave-node.md` · `country-bridge.md` · `warp-optional.md` · `migration.md` · `clients.md` · `protocol-selection.md` · `multi-user.md` · `amneziawg.md`
 
 ## Reference index
 
@@ -182,6 +188,7 @@ backup locations, certificate renewal date, whitelisted IPs, what is verified vs
 | `references/testing-methods.md` | **What proves a profile works** |
 | `references/agent-access-hygiene.md` | **Agent account, leftovers audit** |
 | `references/amneziawg.md` | **Optional AmneziaWG 3.1** |
+| `references/country-bridge.md` | **Optional country-bridge exits** |
 | `references/api-reference.md` | **API (3.9.0 verified)** |
 | `references/gotchas.md` | Hysteria, hosts table, nginx, sudo-rs, updates |
 | `references/inbounds.md` | Inbound recipes + 1.3 warnings |
@@ -224,4 +231,5 @@ backup locations, certificate renewal date, whitelisted IPs, what is verified vs
 - Edit settings in SQLite and expect them live without restarting `x-ui`
 - `sudo -E` on Ubuntu 26.04; `pkill -f` over SSH
 - Revert server changes because one client shows `n/a`
+- A balancer without `fallbackTag` (traffic silently leaves from the hub's own IP); provider nodes selected by tag name / bare prefix; personal data through third-party nodes; client-side WARP chained with bridge lines
 - Patch binaries · commit secrets · route the bare VPS IP in Podkop for panel admin
